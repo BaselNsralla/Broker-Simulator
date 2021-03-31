@@ -1,17 +1,5 @@
-import { start } from 'repl';
-import {PositionType, BankUserInputType, CandleType, Loan, ContractOperator} from './interfaces/broker';
 
-const EmptyPosition = (): PositionType => {
-    return {
-            isOpen: false, 
-            currentQty: 0, 
-            leverage: 0, 
-            liquidationPrice: 0, 
-            entry_price: 0,
-            timestamp: ""
-        }
-}
-
+import {PositionType, BankUserInput, CandleType, Loan, ContractOperator} from './interfaces/broker-interfaces';
 
 /*
 
@@ -42,24 +30,25 @@ take profit ska inte behöva göras på sälj av köpta aktier, eftersom vi påv
 Take profit på shorts, inheritance model för positions.
 */
 
-
 /*
 Jag har en balance, 
 jag lånar kontrakt från banken, ni får tillbaka dem sen
 
 */
 
-const contract_cost = (current_price: number) : number => {
-    return 1/current_price         
+const EmptyPosition = (): PositionType => {
+    return {
+            isOpen: false, 
+            currentQty: 0, 
+            leverage: 0, 
+            liquidationPrice: 0, 
+            entry_price: 0,
+            timestamp: ""
+        }
 }
 
-
-class Wallet {
-    btc_balance: number;
-    constructor(start_balance: number) {
-        this.btc_balance = start_balance
-    }
-
+const contract_cost = (current_price: number) : number => {
+    return 1/current_price         
 }
 
 class Bank {
@@ -74,7 +63,7 @@ class Bank {
         return this._instance
     }
     
-    public loan(input: BankUserInputType): boolean {
+    public loan(input: BankUserInput): boolean {
         const {contract_cost, id, contracts, balance } = input
 
         if (!this.user_loans.has(id)) { this.user_loans.set(id, 0) }
@@ -98,24 +87,54 @@ class Bank {
 
 }
 
-
-export default class Broker {
-    short_position: PositionType = EmptyPosition();
-    long_position: PositionType = EmptyPosition();
-    current_price: number = 0 
-    btc_balance: number;
-    ID: string = "xid"
+export class Wallet {
+    private btc_balance: number;
 
     constructor(start_balance: number) {
         this.btc_balance = start_balance
     }
 
+    private man_wallet(contracts: number, current_price: number, operator: ContractOperator) {   
+        this.btc_balance = operator(this.btc_balance, contract_cost(current_price) * contracts)
+    }
+
+    add_value(contracts: number, current_price: number) {
+        this.man_wallet(contracts, current_price, (a: number, b: number): number => a + b)
+    }
+
+    sub_value(contracts: number, current_price: number) {
+        this.man_wallet(contracts, current_price, (a: number, b: number): number => a - b)
+    }
+
+    balance(): number {
+        return this.btc_balance
+    }
+
+    reset() {
+        this.btc_balance = 0
+    }
+
+}
+
+
+
+export class Broker {
+    short_position: PositionType = EmptyPosition();
+    long_position: PositionType = EmptyPosition();
+    current_price: number = 0 
+    private wallet: Wallet;
+    ID: string = "xid"
+
+    constructor(wallet: Wallet) {
+        this.wallet = wallet
+    }
+
     canbuyback(): boolean {
-        return this.btc_balance >= this.short_position.currentQty * contract_cost(this.current_price)
+        return this.wallet.balance() >= this.short_position.currentQty * contract_cost(this.current_price)
     }
 
     liquidate() {
-        this.btc_balance = 0
+        this.wallet.reset()
         this.short_position = EmptyPosition()
         this.long_position = EmptyPosition()
     }
@@ -127,70 +146,61 @@ export default class Broker {
         }
     }
 
-    man_wallet(contracts: number, operator: ContractOperator) {   
-        this.btc_balance = operator(this.btc_balance, contract_cost(this.current_price) * contracts)
-    }
-
-    add_value(contracts: number) {
-        this.man_wallet(contracts, (a: number, b: number): number => a + b)
-    }
-
-    sub_value(contracts: number) {
-        this.man_wallet(contracts, (a: number, b: number): number => a - b)
+    private man_opposite_pos(position: PositionType, contracts: number) {
+        const rest = position.currentQty - contracts
+        position.currentQty = rest < 0 ? 0 : rest
+        const post_con = Math.abs(Math.min(0, rest))
+        const pre_con = contracts + rest
+        return [pre_con, post_con]
     }
 
     // Det här kan generaliseras på båda short och buy
     short(contracts: number) {
-        let short_con = contracts
+        let short_contracts = contracts
         if(this.long_position.currentQty > 0) {
-            const rest = this.long_position.currentQty - contracts
-            this.long_position.currentQty = rest < 0 ? 0 : rest
-            short_con = Math.abs(Math.min(0, rest))
-            const res_con = contracts + rest 
-            this.add_value(res_con)
+            const [pre_short, post_short] = this.man_opposite_pos(this.long_position, contracts)
+            short_contracts = post_short
+            this.wallet.add_value(pre_short, this.current_price)
         }
         
         const success = Bank.getInstance()
                             .loan({
-                                contracts:  short_con,
-                                balance: this.btc_balance,
+                                contracts:  short_contracts,
+                                balance: this.wallet.balance(),
                                 id: this.ID,
                                 contract_cost: contract_cost(this.current_price)
                             })
 
         if (success) 
         {
-            this.add_value(short_con)
+            this.wallet.add_value(short_contracts, this.current_price)
         }
 
         return success
     }
 
     long(contracts: number) {
-        let long_con = contracts
+        let long_contracts = contracts
         if (this.short_position.currentQty > 0) {
-            const rest = this.short_position.currentQty - contracts
-            this.short_position.currentQty = rest < 0 ? 0 : rest
-            long_con = Math.abs(Math.min(0, rest))
-            const res_con = contracts + rest
-            const success = Bank.getInstance().payback(this.ID, res_con)
-
+            const [pre_long, post_long] = this.man_opposite_pos(this.short_position, contracts)
+            long_contracts = post_long
+            const success = Bank.getInstance().payback(this.ID, pre_long)
             if (success) {
-               this.sub_value(res_con)
+                this.wallet.sub_value(pre_long, this.current_price)
             } else {
                 return false 
             }
         }
 
         // Possible to buy with my current balance?
-        if(contract_cost(this.current_price) * long_con > this.btc_balance) {
+        if(contract_cost(this.current_price) * long_contracts > this.wallet.balance()) {
             //Note: we need to rollback the possible if entrance above
             return false
         }
         
         // If possible to buy, alter positions and balance
-        this.sub_value(long_con)
-        this.long_position.currentQty += long_con
+        this.wallet.sub_value(long_contracts, this.current_price)
+        this.long_position.currentQty += long_contracts
 
 
     }
