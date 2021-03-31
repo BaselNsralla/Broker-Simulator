@@ -1,11 +1,6 @@
-# Trading Notifier
+# Broker Simulator for Exemplarius
 
-* This should handle the data according to our core program 
-* We will need to use this module to access history data
-
-## APIs
-https://nomics.com/docs/#section/General/Demo-Application
-https://docs.coinapi.io/#list-all-periods
+Sandbox for long, short, and position management 
 
 ---
 
