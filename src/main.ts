@@ -2,8 +2,9 @@ import Network from './network';
 import {Broker, Wallet} from './broker'
 import DataDaemon, {CandleType} from './daemon';
 
-const fs      = require('fs');
-const fastify = require('fastify')({ logger: true })
+//const fastify = require('fastify')({ logger: true })
+import Fastify, { FastifyInstance, RouteShorthandOptions } from 'fastify'
+const fastify: FastifyInstance = Fastify({})
 
 const start_server = (broker: Broker, data_daemon: DataDaemon) => {
 
@@ -25,7 +26,7 @@ const start_server = (broker: Broker, data_daemon: DataDaemon) => {
         return { hello: 'world' }  
     })
 
-    (async () => {
+    const listen = async () => {
         try {
           await fastify.listen(3000)
         } catch (err) {
@@ -33,7 +34,9 @@ const start_server = (broker: Broker, data_daemon: DataDaemon) => {
           process.exit(1)
         }
     
-    })()
+    }
+    
+    listen()
 }
 
 const main = async function(): Promise<void> 
