@@ -15,7 +15,7 @@ export interface CandleType {
     time_period_start: string
 }
 
-export interface BankUserInputType {
+export interface BankUserInput {
     id:        string, 
     contracts: number, 
     contract_cost: number

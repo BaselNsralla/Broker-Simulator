@@ -1,12 +1,10 @@
 import Network from './network';
+import {Broker, Wallet} from './broker'
 
 const fs      = require('fs');
 const fastify = require('fastify')({ logger: true })
 
-let win  = 0
-let lose = 0
-
-class DataProvider {
+class DataDaemon {
     data_list: any[]; 
     tick: number; 
 
@@ -23,14 +21,11 @@ class DataProvider {
     }
 }
 
+const start_server = (broker: Broker, data_daemon: DataDaemon) => {
 
-
-
-const start_server = (data_provider: DataProvider) => {
     fastify.get('/data', async (request: any, reply: any) => {
         return { hello: 'world' }  
     })
-
 
     // keep track of these by a Broker class
     fastify.get('/place', async (request: any, reply: any) => {
@@ -55,7 +50,7 @@ const start_server = (data_provider: DataProvider) => {
 
 const main = async function(): Promise<void> 
 {
-    start_server(new DataProvider('data.json'))
+    start_server(new Broker(new Wallet(100)), new DataDaemon('data.json'))
     // const net = Network.Init(['BTC'])
     // const data = await net.tick_data()
     // console.log(data)
