@@ -2,7 +2,6 @@
 import {PositionType, BankUserInput, Loan, ContractOperator} from './interfaces/broker-interfaces';
 
 /*
-
 Säljer kontrakt för 10 köper tillbaka för 5
 vi har vinst på skillnaden, det kan hända tvärtom
 
@@ -83,8 +82,6 @@ class Bank {
         this.user_loans.set(id, current_loan - contracts)
         return true
     }
-
-
 }
 
 export class Wallet {
@@ -113,10 +110,7 @@ export class Wallet {
     reset() {
         this.btc_balance = 0
     }
-
 }
-
-
 
 export class Broker {
     short_position: PositionType = EmptyPosition();
@@ -171,8 +165,7 @@ export class Broker {
                                 contract_cost: contract_cost(this.current_price)
                             })
 
-        if (success) 
-        {
+        if (success) {
             this.wallet.add_value(short_contracts, this.current_price)
         }
 

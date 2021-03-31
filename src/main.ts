@@ -1,9 +1,9 @@
 import Network from './network';
 import {Broker, Wallet} from './broker'
 import DataDaemon, {CandleType} from './daemon';
+
 const fs      = require('fs');
 const fastify = require('fastify')({ logger: true })
-
 
 const start_server = (broker: Broker, data_daemon: DataDaemon) => {
 
