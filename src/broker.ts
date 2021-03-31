@@ -1,5 +1,5 @@
 
-import {PositionType, BankUserInput, CandleType, Loan, ContractOperator} from './interfaces/broker-interfaces';
+import {PositionType, BankUserInput, Loan, ContractOperator} from './interfaces/broker-interfaces';
 
 /*
 

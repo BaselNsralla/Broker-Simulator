@@ -7,14 +7,6 @@ export interface PositionType {
     timestamp:        string,
 }
 
-export interface CandleType {
-    price_open:        number,
-    price_close:       number,
-    price_high:        number,
-    price_low:         number,
-    time_period_start: string
-}
-
 export interface BankUserInput {
     id:        string, 
     contracts: number, 

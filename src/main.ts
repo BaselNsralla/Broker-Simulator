@@ -1,27 +1,15 @@
 import Network from './network';
 import {Broker, Wallet} from './broker'
-
+import DataDaemon, {CandleType} from './daemon';
 const fs      = require('fs');
 const fastify = require('fastify')({ logger: true })
 
-class DataDaemon {
-    data_list: any[]; 
-    tick: number; 
-
-    constructor(filename: string) {
-        const rawdata = fs.readFileSync(filename);
-        this.data_list = JSON.parse(rawdata);
-        this.tick = 0
-    }
-
-    getTick(): any {
-        const data = this.data_list[this.tick]
-        this.tick += 1
-        return data
-    }
-}
 
 const start_server = (broker: Broker, data_daemon: DataDaemon) => {
+
+    data_daemon.start((candle: CandleType) => {
+        broker.tick(candle.price_close)
+    })
 
     fastify.get('/data', async (request: any, reply: any) => {
         return { hello: 'world' }  
