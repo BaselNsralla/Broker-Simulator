@@ -16,6 +16,7 @@ Add your api_key to the `config.json` file inside the `src` folder
 
 ### Installation
 `npm install -g ts-node ts tsc nodemon`
+
 `npm install`
 
 ### Run
