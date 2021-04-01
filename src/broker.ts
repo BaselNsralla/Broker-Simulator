@@ -123,29 +123,42 @@ export class Broker {
         this.wallet = wallet
     }
 
-    canbuyback(): boolean {
-        return this.wallet.balance() >= this.short_position.currentQty * contract_cost(this.current_price)
-    }
-
-    liquidate() {
-        this.wallet.reset()
-        this.short_position = EmptyPosition()
-        this.long_position = EmptyPosition()
-    }
-
-    tick(price: number) {
-        this.current_price = price
-        if(!this.canbuyback()) {
-            this.liquidate()
-        }
-    }
-
     private man_opposite_pos(position: PositionType, contracts: number) {
         const rest = position.currentQty - contracts
         position.currentQty = rest < 0 ? 0 : rest
         const post_con = Math.abs(Math.min(0, rest))
         const pre_con = contracts + rest
         return [pre_con, post_con]
+    }
+    
+
+    private canbuyback(): boolean {
+        return this.wallet.balance() >= this.short_position.currentQty * contract_cost(this.current_price)
+    }
+
+    private liquidate() {
+        this.wallet.reset()
+        this.short_position = EmptyPosition()
+        this.long_position = EmptyPosition()
+    }
+
+    getPosition(): PositionType {
+        const [longs, shorts] = [this.long_position.currentQty, this.short_position.currentQty]
+        if (longs > 0) {
+            return this.long_position
+        } else if(shorts > 0) {
+            return {...this.short_position, currentQty: -1*shorts}
+        } else {
+            return this.long_position
+        }
+    }
+
+
+    tick(price: number) {
+        this.current_price = price
+        if(!this.canbuyback()) {
+            this.liquidate()
+        }
     }
 
     // Det här kan generaliseras på båda short och buy
