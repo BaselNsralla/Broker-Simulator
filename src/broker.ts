@@ -53,16 +53,23 @@ const contract_cost = (current_price: number) : number => {
 class Bank {
 
     private static _instance: Bank = null;
-    private user_loans: Map<string, Loan>    
+    private user_loans: Map<string, Loan> = new Map<string, Loan>()    
 
     public static getInstance() {
         if (this._instance === null) {
-            return new Bank()
+            this._instance = new Bank()
+            return this._instance
         }
         return this._instance
     }
+
+
+    // contracts:  short_contracts,
+    // balance: this.wallet.balance(),
+    // id: this.ID,
+    // contract_cost: contract_cost(this.current_price)
     
-    public loan(input: BankUserInput): boolean {
+    loan = (input: BankUserInput): boolean => {
         const {contract_cost, id, contracts, balance } = input
 
         if (!this.user_loans.has(id)) { this.user_loans.set(id, 0) }
@@ -76,7 +83,7 @@ class Bank {
         return possible
     }
 
-    public payback(id: string, contracts: number): boolean {
+    payback = (id: string, contracts: number): boolean => {
         if (!this.user_loans.has(id)) { return false }
         const current_loan = this.user_loans.get(id)
         this.user_loans.set(id, current_loan - contracts)
@@ -123,23 +130,6 @@ export class Broker {
         this.wallet = wallet
     }
 
-    canbuyback(): boolean {
-        return this.wallet.balance() >= this.short_position.currentQty * contract_cost(this.current_price)
-    }
-
-    liquidate() {
-        this.wallet.reset()
-        this.short_position = EmptyPosition()
-        this.long_position = EmptyPosition()
-    }
-
-    tick(price: number) {
-        this.current_price = price
-        if(!this.canbuyback()) {
-            this.liquidate()
-        }
-    }
-
     private man_opposite_pos(position: PositionType, contracts: number) {
         const rest = position.currentQty - contracts
         position.currentQty = rest < 0 ? 0 : rest
@@ -147,9 +137,39 @@ export class Broker {
         const pre_con = contracts + rest
         return [pre_con, post_con]
     }
+    
+
+    private canbuyback(): boolean {
+        return this.wallet.balance() >= this.short_position.currentQty * contract_cost(this.current_price)
+    }
+
+    private liquidate() {
+        this.wallet.reset()
+        this.short_position = EmptyPosition()
+        this.long_position = EmptyPosition()
+    }
+
+    public position(): PositionType {
+        const [longs, shorts] = [this.long_position.currentQty, this.short_position.currentQty]
+        if (longs > 0) {
+            return this.long_position
+        } else if(shorts > 0) {
+            return {...this.short_position, currentQty: -1*shorts}
+        } else {
+            return this.long_position
+        }
+    }
+
+
+    public tick(price: number) {
+        this.current_price = price
+        if(!this.canbuyback()) {
+            this.liquidate()
+        }
+    }
 
     // Det här kan generaliseras på båda short och buy
-    short(contracts: number) {
+    short = (contracts: number) => {
         let short_contracts = contracts
         if(this.long_position.currentQty > 0) {
             const [pre_short, post_short] = this.man_opposite_pos(this.long_position, contracts)
@@ -172,7 +192,7 @@ export class Broker {
         return success
     }
 
-    long(contracts: number) {
+    long = (contracts: number) => {
         let long_contracts = contracts
         if (this.short_position.currentQty > 0) {
             const [pre_long, post_long] = this.man_opposite_pos(this.short_position, contracts)
@@ -195,6 +215,7 @@ export class Broker {
         this.wallet.sub_value(long_contracts, this.current_price)
         this.long_position.currentQty += long_contracts
 
+        return true
 
     }
 

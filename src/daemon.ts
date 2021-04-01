@@ -8,6 +8,8 @@ export interface CandleType {
     time_period_start: string
 }
 
+type TickCallback = (candle: CandleType, err: Error) => void
+
 export default class DataDaemon {
     data_list: any[]; 
     tick: number; 
@@ -19,14 +21,18 @@ export default class DataDaemon {
     }
 
     getTick(): any {
+        if (this.tick > this.data_list.length - 1) { 
+            return [null, new Error("End of data")] 
+        }
         const data = this.data_list[this.tick]
         this.tick += 1
-        return data
+        return [data, null]
     }
 
-    start(cb: (candle: CandleType) => void) {
+    tick_loop(cb: TickCallback) {
         setInterval(() => {
-            cb(this.getTick())
+            const [data, err] = this.getTick()
+            cb(data, err)
         }, 3000)
     }
 }
