@@ -4,7 +4,8 @@ import DataDaemon, {CandleType} from './daemon';
 
 //const fastify = require('fastify')({ logger: true })
 import Fastify, { FastifyInstance, RouteShorthandOptions } from 'fastify'
-import ApiHandler from 'api-handler';
+import ApiHandler from './api-handler';
+import reply_utils_hook from './reply-utils';
 const fastify: FastifyInstance = Fastify({})
 
 const start_server = (broker: Broker, data_daemon: DataDaemon) => {
@@ -14,7 +15,7 @@ const start_server = (broker: Broker, data_daemon: DataDaemon) => {
             console.log("Data ticks have ended")
             process.exit()
         }
-        console.log(candle)
+        console.log("tick: \t", candle.price_close)
         broker.tick(candle.price_close)
     })
 
@@ -25,14 +26,12 @@ const start_server = (broker: Broker, data_daemon: DataDaemon) => {
     })
 
     // keep track of these by a Broker class
-    fastify.post('/order', apiHandler.place_order)
+    fastify.post('/order', reply_utils_hook(apiHandler.place_order))
 
 
 
     //Position(element['isOpen'], element['currentQty'], 0, 0, element['timestamp'])
-    fastify.get('/positions', async (request: any, reply: any) => {
-        return broker.getPostion()  
-    })
+    fastify.get('/positions', reply_utils_hook(apiHandler.get_positions))
 
     const listen = async () => {
         try {
