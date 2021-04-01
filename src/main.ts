@@ -28,8 +28,6 @@ const start_server = (broker: Broker, data_daemon: DataDaemon) => {
     // keep track of these by a Broker class
     fastify.post('/order', reply_utils_hook(apiHandler.place_order))
 
-
-
     //Position(element['isOpen'], element['currentQty'], 0, 0, element['timestamp'])
     fastify.get('/positions', reply_utils_hook(apiHandler.get_positions))
 
@@ -40,7 +38,6 @@ const start_server = (broker: Broker, data_daemon: DataDaemon) => {
           fastify.log.error(err)
           process.exit(1)
         }
-    
     }
 
     listen()

@@ -1,6 +1,5 @@
 
 export class Url {
-    
     base_url: string
     params: [string, string][]
     path_url: string 
@@ -34,5 +33,4 @@ export class Url {
         const url = this.base_url + this.path_url + params_url
         return url 
     }
-
 }

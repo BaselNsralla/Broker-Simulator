@@ -9,7 +9,6 @@ interface NetworkType {
     tick_data: (symbol: string) => Promise<any>,
 }
 
-
 // Intervalled requests will share interval 1h as common
 const tick_data = (url: Url): Promise<any> => {
 

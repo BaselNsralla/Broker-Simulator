@@ -1,12 +1,9 @@
-
-
 export interface ReplyUtils {
     json: (data: any) => void,
     json_code: (code: number, data: any) => void
 }
 
 type ReplyHandler = (rep_util: ReplyUtils, req: any, rep: any) => Promise<void>
-
 
 const reply_utils_hook = (handler: ReplyHandler) => async (request: any, reply: any) => {
     const utils: ReplyUtils =  {

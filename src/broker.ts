@@ -63,12 +63,6 @@ class Bank {
         return this._instance
     }
 
-
-    // contracts:  short_contracts,
-    // balance: this.wallet.balance(),
-    // id: this.ID,
-    // contract_cost: contract_cost(this.current_price)
-    
     loan = (input: BankUserInput): boolean => {
         const {contract_cost, id, contracts, balance } = input
 
@@ -218,7 +212,4 @@ export class Broker {
         return true
 
     }
-
-
-
 }
