@@ -1,11 +1,23 @@
 import { Broker } from "broker"
-import { IncomingMessage, ServerResponse } from "http";
+import DataDaemon from "./daemon";
+import { IncomingMessage, request, ServerResponse } from "http";
 import { ReplyUtils } from "./reply-utils";
 
 export default class ApiHandler {
     private broker: Broker;
-    constructor(broker: Broker) {
+    private data_daemon: DataDaemon;
+
+    constructor(broker: Broker, daemon: DataDaemon) {
         this.broker = broker
+        this.data_daemon = daemon
+    }
+
+    get_market = async (request: any, reply: any) => {
+        const count = request.query.count
+        if (!count) {
+            return this.data_daemon.getAll()
+        }
+        return this.data_daemon.getPart(request.query.count)   
     }
 
     place_order = async (utils: ReplyUtils, request: any, reply: any) => {//(request: IncomingMessage, reply: ServerResponse) {
@@ -23,4 +35,5 @@ export default class ApiHandler {
     get_positions = async (utils: ReplyUtils, request: any, reply: any) => {
         utils.json(this.broker.position())
     }
+
 }

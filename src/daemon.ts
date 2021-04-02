@@ -20,6 +20,10 @@ export default class DataDaemon {
         this.tick = 0
     }
 
+    getPart(count: number): any[] {
+        return this.data_list.slice(this.data_list.length - count)
+    }
+
     getAll(): any[] {
         return this.data_list
     }
