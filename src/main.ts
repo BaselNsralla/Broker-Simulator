@@ -22,7 +22,7 @@ const start_server = (broker: Broker, data_daemon: DataDaemon) => {
     const apiHandler = new ApiHandler(broker)
 
     fastify.get('/data', async (request: any, reply: any) => {
-        return { hello: 'world' }  
+        return data_daemon.getAll()
     })
 
     // keep track of these by a Broker class

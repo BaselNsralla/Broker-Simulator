@@ -20,6 +20,10 @@ export default class DataDaemon {
         this.tick = 0
     }
 
+    getAll(): any[] {
+        return this.data_list
+    }
+
     getTick(): any {
         if (this.tick > this.data_list.length - 1) { 
             return [null, new Error("End of data")] 
