@@ -6,7 +6,10 @@ import ApiHandler from './api-handler';
 import reply_utils_hook from './reply-utils';
 const fastify: FastifyInstance = Fastify({})
 
-const start_server = (broker: Broker, data_daemon: DataDaemon) => {
+const start_server = (data_daemon: DataDaemon) => {
+
+    const wallet = new Wallet(100)
+    const broker = new Broker(wallet)
 
     data_daemon.tick_loop((candle: CandleType, err: Error) => {
         if (err) {
@@ -22,6 +25,7 @@ const start_server = (broker: Broker, data_daemon: DataDaemon) => {
     fastify.get('/data',      apiHandler.get_market)
     fastify.post('/order',    reply_utils_hook(apiHandler.place_order))
     fastify.get('/positions', reply_utils_hook(apiHandler.get_positions))
+    fastify.get('/balance',   async (req:any, res: any) => wallet.balance())
 
     const listen = async () => {
         try {
@@ -37,7 +41,7 @@ const start_server = (broker: Broker, data_daemon: DataDaemon) => {
 
 const main = async function(): Promise<void> 
 {
-    start_server(new Broker(new Wallet(100)), new DataDaemon('data.json'))
+    start_server(new DataDaemon('data.json'))
     // const net = Network.Init(['BTC'])
     // const data = await net.tick_data()
     // console.log(data)
