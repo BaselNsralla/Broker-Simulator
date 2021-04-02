@@ -7,6 +7,8 @@ Sandbox for long, short, and position management
 ### Setup
 Add your api_key to the `config.json` file inside the `src` folder
 
+* Create the file in the following format:
+
 ```json
 {
     "api_key": "ABCDEFGHI...221321",
