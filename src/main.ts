@@ -25,7 +25,7 @@ const start_server = (data_daemon: DataDaemon) => {
     fastify.get('/data',      apiHandler.get_market)
     fastify.post('/order',    reply_utils_hook(apiHandler.place_order))
     fastify.get('/positions', reply_utils_hook(apiHandler.get_positions))
-    fastify.get('/balance',   async (req:any, res: any) => wallet.balance())
+    fastify.get('/balance',   async (req:any, res: any) => ({"amount": wallet.balance()}))
 
     const listen = async () => {
         try {
