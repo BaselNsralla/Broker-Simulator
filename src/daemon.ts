@@ -13,15 +13,18 @@ type TickCallback = (candle: CandleType, err: Error) => void
 export default class DataDaemon {
     data_list: any[]; 
     tick: number; 
+    interval: number
 
-    constructor(filename: string) {
+    constructor(filename: string, interval: number) {
         const rawdata = fs.readFileSync(filename);
         this.data_list = JSON.parse(rawdata);
         this.tick = 0
+        this.interval = interval
     }
 
     getPart(count: number): any[] {
-        return this.data_list.slice(this.data_list.length - count)
+        const current_data =  this.data_list.slice(0, this.tick+1)
+        return current_data.slice(current_data.length - count)
     }
 
     getAll(): any[] {
@@ -41,6 +44,6 @@ export default class DataDaemon {
         setInterval(() => {
             const [data, err] = this.getTick()
             cb(data, err)
-        }, 3000)
+        }, this.interval)
     }
 }

@@ -17,7 +17,13 @@ export default class ApiHandler {
         if (!count) {
             return this.data_daemon.getAll()
         }
-        return this.data_daemon.getPart(request.query.count)   
+        switch (request.query.candle_range) {
+            case "1m": 
+                return this.data_daemon.getPart(request.query.count)   
+            default:
+                console.log("Unknown candle range")
+                throw new Error("Unknown candle range")
+        }
     }
 
     place_order = async (utils: ReplyUtils, request: any, reply: any) => {//(request: IncomingMessage, reply: ServerResponse) {
@@ -33,7 +39,7 @@ export default class ApiHandler {
     }
 
     get_positions = async (utils: ReplyUtils, request: any, reply: any) => {
-        utils.json(this.broker.position())
+        utils.json([this.broker.position()])
     }
 
 }

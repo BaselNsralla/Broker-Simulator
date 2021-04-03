@@ -41,7 +41,7 @@ const start_server = (data_daemon: DataDaemon) => {
 
 const main = async function(): Promise<void> 
 {
-    start_server(new DataDaemon('data.json'))
+    start_server(new DataDaemon('data_hour.json', 1000))
     // const net = Network.Init(['BTC'])
     // const data = await net.tick_data()
     // console.log(data)
